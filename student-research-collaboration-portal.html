@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ALAN 文献阅读反馈门户</title>
+  <style>
+    :root {
+      --bg: #f6efe4;
+      --paper: #fffaf2;
+      --paper-2: #fbf3e7;
+      --ink: #26211c;
+      --muted: #736a60;
+      --line: #ded0bd;
+      --soft: #efe3d2;
+      --accent: #8f4a30;
+      --accent-dark: #552d20;
+      --sage: #586b58;
+      --sea: #54736b;
+      --night: #2f3e52;
+      --warning: #a15c27;
+      --shadow: 0 26px 70px rgba(64, 43, 22, 0.13);
+      --radius: 26px;
+      --serif: "Iowan Old Style", "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at 8% -8%, rgba(143, 74, 48, 0.16), transparent 32rem),
+        radial-gradient(circle at 96% 0%, rgba(84, 115, 107, 0.13), transparent 30rem),
+        linear-gradient(135deg, #f8f1e8 0%, #eadbc8 100%);
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { border: 0; cursor: pointer; }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid rgba(222, 208, 189, .95);
+      border-radius: 18px;
+      background: rgba(255, 250, 242, .9);
+      color: var(--ink);
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    textarea { min-height: 108px; resize: vertical; line-height: 1.7; }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(143, 74, 48, .6);
+      box-shadow: 0 0 0 4px rgba(143, 74, 48, .1);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1, h2, h3 { font-family: var(--serif); letter-spacing: -.045em; }
+    h1 { max-width: 820px; font-size: clamp(40px, 6vw, 74px); line-height: .98; }
+    h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.08; }
+    h3 { font-size: 22px; line-height: 1.18; }
+    p { color: var(--muted); line-height: 1.8; text-wrap: pretty; }
+
+    .page { width: min(1180px, calc(100vw - 32px)); margin: 28px auto 54px; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .brand { display: grid; gap: 6px; }
+    .brand-title { font-family: var(--serif); font-size: clamp(30px, 4vw, 50px); line-height: 1; letter-spacing: -.05em; }
+    .brand-subtitle { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    .privacy-badge, .tag, .tier, .status-pill {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      white-space: nowrap;
+      font-weight: 850;
+    }
+
+    .privacy-badge {
+      border: 1px solid rgba(88, 107, 88, .32);
+      background: rgba(88, 107, 88, .1);
+      color: #344736;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr);
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .panel, .title-card, .status-card, .tabbar, .literature-card, .feedback-card {
+      background: rgba(255, 250, 242, .9);
+      border: 1px solid rgba(169, 139, 109, .42);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .title-card, .status-card, .panel { border-radius: 34px; padding: 28px; position: relative; overflow: hidden; }
+    .title-card::after {
+      content: "";
+      position: absolute;
+      right: -96px;
+      bottom: -120px;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      border: 1px solid rgba(143, 74, 48, .16);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+      color: var(--sea);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 36px; height: 2px; background: var(--sea); }
+    .subtitle { margin-top: 18px; max-width: 780px; font-size: 16px; }
+
+    .status-card { display: grid; gap: 14px; }
+    .stamp { color: var(--warning); font-size: 13px; font-weight: 900; letter-spacing: .08em; }
+
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .metric { border-radius: 18px; padding: 14px 12px; background: rgba(239, 227, 210, .72); }
+    .metric b { display: block; font-family: var(--serif); font-size: 24px; line-height: 1; }
+    .metric span { display: block; margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .tabbar {
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-radius: 24px;
+      padding: 9px;
+      margin: 18px 0;
+    }
+
+    .tab-button {
+      flex: 1 1 auto;
+      min-width: 118px;
+      border-radius: 17px;
+      padding: 11px 12px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .tab-button.active { background: var(--accent-dark); color: #fffaf2; box-shadow: 0 12px 28px rgba(85, 45, 32, .22); }
+
+    .section { display: none; animation: fadeIn .24s ease-out; }
+    .section.active { display: grid; gap: 18px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section-label {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 10px;
+    }
+    .section-label .note { max-width: 520px; color: var(--muted); font-size: 13px; line-height: 1.6; text-align: right; }
+
+    .grid-2, .grid-3, .card-grid, .form-grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .form-grid { grid-template-columns: 220px minmax(0, 1fr); }
+
+    .list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .list li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; color: var(--muted); line-height: 1.75; }
+    .list li::before { content: "◆"; color: var(--accent); font-size: 11px; margin-top: 4px; }
+
+    details.panel summary { cursor: pointer; font-family: var(--serif); font-size: 24px; font-weight: 800; letter-spacing: -.03em; }
+    details.panel[open] summary { margin-bottom: 18px; }
+
+    .filter-row, .button-row, .tag-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .filter-button, .btn {
+      border-radius: 999px;
+      padding: 11px 15px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .filter-button { color: var(--accent-dark); background: rgba(143, 74, 48, .1); border: 1px solid rgba(143, 74, 48, .2); }
+    .filter-button.active, .btn { color: #fffaf2; background: var(--accent-dark); box-shadow: 0 14px 30px rgba(85, 45, 32, .18); }
+    .btn.secondary { color: var(--accent-dark); background: rgba(143, 74, 48, .1); box-shadow: none; border: 1px solid rgba(143, 74, 48, .2); }
+    .btn.danger { color: #fffaf2; background: #7a3329; }
+
+    .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .literature-card, .feedback-card {
+      border-radius: var(--radius);
+      padding: 20px;
+      display: grid;
+      gap: 12px;
+      box-shadow: none;
+      background: rgba(251, 243, 231, .86);
+    }
+    .literature-card.done { border-color: rgba(88, 107, 88, .42); background: rgba(240, 246, 236, .64); }
+    .literature-card.reading { border-color: rgba(143, 74, 48, .42); }
+    .card-title { font-family: var(--serif); font-size: 21px; line-height: 1.18; letter-spacing: -.025em; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; font-weight: 850; }
+
+    .tag, .tier, .status-pill { padding: 7px 10px; font-size: 12px; }
+    .tag { border: 1px solid rgba(84, 115, 107, .28); background: rgba(84, 115, 107, .08); color: #38544e; }
+    .tier { background: rgba(47, 62, 82, .09); color: var(--night); border: 1px solid rgba(47, 62, 82, .18); }
+    .tier.a1 { background: rgba(88, 107, 88, .11); color: #344736; }
+    .tier.b { background: rgba(84, 115, 107, .11); color: #38544e; }
+    .tier.cd, .tier.bc { background: rgba(143, 74, 48, .1); color: var(--accent-dark); }
+    .tier.d { background: rgba(47, 62, 82, .1); color: var(--night); }
+    .status-pill { background: rgba(222, 208, 189, .45); color: var(--muted); }
+    .status-pill.done { background: rgba(88, 107, 88, .12); color: #344736; }
+    .status-pill.reading { background: rgba(161, 92, 39, .12); color: #704019; }
+
+    .compact { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .claim-box { border-left: 4px solid var(--accent); padding-left: 14px; color: var(--muted); line-height: 1.75; }
+    .question-grid { display: grid; gap: 14px; }
+    .question-label { display: grid; gap: 7px; font-weight: 850; color: var(--ink); }
+    .question-label span { color: var(--muted); font-size: 13px; font-weight: 500; line-height: 1.6; }
+
+    .notice {
+      border: 1px solid rgba(161, 92, 39, .28);
+      background: rgba(161, 92, 39, .08);
+      color: #633819;
+      border-radius: 22px;
+      padding: 16px 18px;
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .record-list { display: grid; gap: 12px; }
+    .record-body { color: var(--ink); white-space: pre-wrap; line-height: 1.75; }
+
+    .logic-figure-frame {
+      display: grid;
+      gap: 14px;
+      padding: clamp(12px, 2vw, 20px);
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(251, 243, 231, .92), rgba(239, 227, 210, .72));
+      border: 1px solid rgba(169, 139, 109, .42);
+      overflow: hidden;
+    }
+
+    .logic-figure {
+      width: 100%;
+      max-height: 78vh;
+      object-fit: contain;
+      border-radius: 22px;
+      background: #fffaf2;
+      box-shadow: 0 20px 52px rgba(64, 43, 22, .12);
+    }
+
+    .figure-caption {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      border-radius: 999px;
+      background: rgba(38, 33, 28, .92);
+      color: #fffaf2;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 850;
+      box-shadow: 0 18px 48px rgba(38, 33, 28, .2);
+      transition: .2s ease;
+      z-index: 40;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    @media (max-width: 900px) {
+      .topbar, .hero, .section-label, .grid-2, .grid-3, .card-grid, .form-grid { grid-template-columns: 1fr; }
+      .topbar, .section-label { display: grid; align-items: start; }
+      .section-label .note { text-align: left; }
+      .metrics { grid-template-columns: 1fr; }
+      .tabbar { position: static; }
+      .privacy-badge { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-title">ALAN 文献阅读反馈门户</div>
+        <div class="brand-subtitle">必读文献 · 单篇阅读反馈 · 项目问题回收</div>
+      </div>
+      <div class="privacy-badge">本地离线 · 不自动上传 · 手动导出</div>
+    </header>
+
+    <section class="hero">
+      <div class="title-card">
+        <div class="eyebrow">Student Reading Desk</div>
+        <h1>把每一篇文献读成可解释的证据边界</h1>
+        <p class="subtitle">这个单文件网页用于收集学生对 ALAN × 近岸微污染物项目的三类反馈：必读文献查阅、单篇文献阅读理解、以及项目问题。所有内容默认只保存在本机浏览器中。</p>
+      </div>
+      <aside class="status-card">
+        <div class="stamp">真实性优先</div>
+        <h2>三条硬边界</h2>
+        <p>不虚构全文阅读，不把 A1 生态证据写成 A2 化学证据，不把小红书暗夜保护经历写成政策或科研成果背书。</p>
+        <div class="metrics" id="hero-metrics"></div>
+      </aside>
+    </section>
+
+    <nav class="tabbar" aria-label="文献反馈导航" id="tabbar"></nav>
+
+    <section class="section active" data-section="overview">
+      <div class="section-label">
+        <h2>使用说明</h2>
+        <div class="note">建议先看基本科学问题，再进入文献列表与教程，最后选择一篇文献填写阅读反馈并导出。</div>
+      </div>
+      <div class="grid-3">
+        <article class="panel"><h3>1. 看必读文献</h3><p>按 A1、B、C/D、B/C、D 五组阅读，先建立 ALAN、DOM/CDOM、近岸污染物和 dark coast 管理的概念框架。</p></article>
+        <article class="panel"><h3>2. 填单篇反馈</h3><p>选择一篇具体文献，回答 8 个固定问题，重点写清暗夜保护关联、ALAN 设置方式和光污染定义。</p></article>
+        <article class="panel"><h3>3. 提项目问题</h3><p>只收集与本项目有关的问题，例如哪篇文献读不懂、哪个机制不清楚、哪句话担心越界。</p></article>
+      </div>
+      <article class="panel">
+        <h3>隐私与导出</h3>
+        <ul class="list">
+          <li>不需要填写真实姓名，建议只填写学生识别码，例如 `S-ALAN-01`。</li>
+          <li>本页没有后端，不会自动上传，所有草稿默认存储在当前浏览器 localStorage。</li>
+          <li>导出的 TXT/JSON 属于学生学习反馈数据，应按项目隐私规则保存，不上传公开平台。</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="section" data-section="logic">
+      <div class="section-label">
+        <h2>本项目科研逻辑展示</h2>
+        <div class="note">这张图用于在阅读文献前建立总览：光污染进入夜间人工光，再分出生态效应和环境化学效应两条路径。</div>
+      </div>
+      <article class="panel">
+        <div class="logic-figure-frame">
+          <img class="logic-figure" src="deliverables/ChatGPT Image Jul 1, 2026, 01_53_03 PM.png" alt="本项目科研逻辑图：光污染导致夜间人工光增强，进而通过生态效应与环境化学效应两条路径影响近岸环境；本项目聚焦 ALAN 介导的近岸污染物夜间累积机制与效应。">
+          <p class="figure-caption">图示逻辑：光污染导致夜间人工光（ALAN）增强；ALAN 对环境的影响分为“光信号机制导致的生态效应”和“化学信号机制导致的环境化学效应”。本项目聚焦后者的一部分，即 ALAN 介导的近岸环境污染物夜间累积机制与效应。该图用于理解研究问题，不表示实验结果已经完成。</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" data-section="science">
+      <div class="section-label">
+        <h2>本项目基本科学问题</h2>
+        <div class="note">这一区域用于帮助学生在读文献前先建立概念框架：光污染、暗夜保护、ALAN 以及三者之间的关系。</div>
+      </div>
+      <div class="grid-2">
+        <details class="panel" open>
+          <summary>1. 什么是光污染？</summary>
+          <ul class="list">
+            <li>光污染指夜间人工光在不合适的时间、地点、方向、强度或光谱下进入环境，干扰自然黑暗、天文观测、人类健康或生态系统。</li>
+            <li>常见效应包括夜空增亮、眩光、光侵入、动物趋光或避光、昼夜节律紊乱、迁徙/觅食/繁殖行为改变。</li>
+            <li>机制上通常涉及光强、照射时长、空间方向、波长组成和周期性信号改变；短波蓝光富集、持续照明、向上或向水体溢散的光更容易造成生态干扰。</li>
+          </ul>
+        </details>
+        <details class="panel" open>
+          <summary>2. 什么是暗夜保护？</summary>
+          <ul class="list">
+            <li>暗夜保护不是简单“不要灯”，而是在安全需要和生态边界之间，减少不必要、不合适、过强或错误光谱的夜间照明。</li>
+            <li>保护对象包括自然夜空、动物夜间行为、迁徙通道、繁殖节律、近岸与潮间带栖息地、人类睡眠健康以及低干扰的夜间环境。</li>
+            <li>核心原则可概括为：需要才照、只照需要的位置、用尽量低的强度、控制照射时间、减少蓝光和外溢光。</li>
+          </ul>
+        </details>
+        <details class="panel" open>
+          <summary>3. 什么是人工夜光（ALAN）？</summary>
+          <ul class="list">
+            <li>ALAN 是 artificial light at night，指夜间由人类活动产生的人工照明，例如路灯、建筑照明、港口灯、车辆灯、广告灯、城市天空辉光等。</li>
+            <li>ALAN 与自然光的联系在于它同样提供光子信号，可被生物感知，也可能参与某些光化学过程。</li>
+            <li>区别在于 ALAN 往往出现在自然夜间应当较暗的时间，光谱、强度、方向、持续时间和周期性不同于月光、星光和昼夜自然节律。</li>
+          </ul>
+        </details>
+        <details class="panel" open>
+          <summary>4. ALAN 与光污染有什么关系？</summary>
+          <ul class="list">
+            <li>ALAN 是夜间人工光这一现象本身；当 ALAN 在强度、方向、时段、光谱或空间位置上造成不必要干扰时，就构成光污染。</li>
+            <li>不是所有 ALAN 都必然等于光污染：必要、低强度、定向、限时、低外溢且符合生态场景的照明，污染性较低。</li>
+            <li>本项目关注的是 ALAN 作为近岸夜间环境压力源，如何通过光场改变、生态行为扰动和潜在光化学机制，连接到暗夜保护与微污染物风险讨论。</li>
+          </ul>
+        </details>
+      </div>
+    </section>
+
+    <section class="section" data-section="literature">
+      <div class="section-label">
+        <h2>必读文献清单与查阅教程</h2>
+        <div class="note">共 27 条记录；A2 化学直接证据当前为 0，是本项目的核心 gap。</div>
+      </div>
+      <details class="panel" open>
+        <summary>文献查阅简明教程</summary>
+        <div class="grid-3">
+          <article><h3>找全文</h3><ul class="list"><li>优先用 DOI：把 `https://doi.org/DOI` 粘贴到浏览器。</li><li>有 PMID/PMCID 时，可到 PubMed 或 PMC 查摘要/全文。</li><li>机构指南用 URL 打开，下载后本地阅读，不要把含学生反馈的文件上传。</li></ul></article>
+          <article><h3>读论文</h3><ul class="list"><li>先读标题、摘要和图表，判断研究对象与终点。</li><li>再读结果和讨论，提取与暗夜保护主题相关的机制和边界。</li><li>最后看方法，确认光源、基质、剂量和局限。</li></ul></article>
+          <article><h3>守边界</h3><ul class="list"><li>A1 是生态/光场证据，不是化学证据。</li><li>B/C/D 级多为相邻证据，不能替代 A2。</li><li>反馈里必须写清哪些结论不能从该文献直接外推。</li></ul></article>
+        </div>
+      </details>
+      <article class="panel">
+        <div class="filter-row" id="tier-filters"></div>
+      </article>
+      <div class="card-grid" id="literature-list"></div>
+    </section>
+
+    <section class="section" data-section="feedback">
+      <div class="section-label">
+        <h2>文献阅读反馈</h2>
+        <div class="note">每次只针对一篇具体文献填写。Q1-Q8 均建议完整填写。</div>
+      </div>
+      <article class="panel">
+        <div class="notice">边界提醒：反馈不是证明学生已完成科研成果，而是记录其对一篇文献的理解。回答时请区分文献类型、研究故事、实验设计、检测指标、技术终点与理论扩展终点。</div>
+        <div class="form-grid">
+          <label>选择文献<select id="feedback-literature"></select></label>
+          <label>阅读日期<input type="date" id="feedback-date"></label>
+        </div>
+        <div class="question-grid" id="feedback-questions"></div>
+        <div class="button-row"><button class="btn" type="button" data-action="save-feedback">保存阅读反馈</button></div>
+      </article>
+      <div class="record-list" id="feedback-list"></div>
+    </section>
+
+    <section class="section" data-section="questions">
+      <div class="section-label">
+        <h2>学生主动性问题反馈</h2>
+        <div class="note">这里只收集问题，不设置回答区。请尽量写成一个具体、可回复的问题。</div>
+      </div>
+      <article class="panel">
+        <div class="notice">范围限定：只提交与本 ALAN 文献项目有关的问题。不要填写真实姓名、联系方式、家庭信息或账号密码。</div>
+        <div class="form-grid">
+          <label>问题类别<select id="question-category"><option value="文献阅读">文献阅读</option><option value="证据边界">证据边界</option><option value="项目方法">项目方法</option><option value="申请表达">申请表达</option><option value="其他项目问题">其他项目问题</option></select></label>
+          <label>问题<textarea id="question-text" placeholder="例如：为什么 A1 文献不能支持污染物光化学？DOM/CDOM 和 ALAN 之间的逻辑链怎么解释？"></textarea></label>
+        </div>
+        <div class="button-row"><button class="btn" type="button" data-action="add-question">提交项目问题</button></div>
+      </article>
+      <div class="record-list" id="question-list"></div>
+    </section>
+
+    <section class="section" data-section="export">
+      <div class="section-label">
+        <h2>保存与导出</h2>
+        <div class="note">导出文件用于人工回传；本页不会自动发送任何数据。</div>
+      </div>
+      <article class="panel">
+        <div class="form-grid">
+          <label>学生识别码<input id="student-code" placeholder="例：S-ALAN-01，不填写真实姓名"></label>
+          <label>当前进度<input id="summary-display" readonly></label>
+        </div>
+        <div class="button-row">
+          <button class="btn" type="button" data-action="export-text">导出 TXT</button>
+          <button class="btn secondary" type="button" data-action="export-json">导出 JSON</button>
+          <button class="btn secondary" type="button" data-action="save-all">保存草稿</button>
+          <button class="btn danger" type="button" data-action="clear-all">清空本机数据</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "alan_literature_feedback_portal_v1";
+    const tabs = [["overview", "概览"], ["logic", "科研逻辑图"], ["science", "科学问题"], ["literature", "文献与教程"], ["feedback", "阅读反馈"], ["questions", "项目问题"], ["export", "导出"]];
+    const questionPrompts = [
+      "这是一篇文献综述（review）还是研究论文（research article）？",
+      "这篇文献讲了一个什么故事？（总结了什么研究规律、结论，或者研究了什么科学问题）",
+      "这篇文献针对什么对象，在什么实验设计（场景）下开展了什么研究？",
+      "设计了什么条件，检测了什么指标，为什么要检测这些指标？",
+      "研究的技术终点（检测的指标物列表）和理论扩展终点（生态、行为、光化学、毒性、环境管理）分别是什么？",
+      "这篇文献的研究内容与结论与暗夜保护的主题有什么关联？",
+      "这篇论文里 ALAN 是怎么设置和设计的，这与客观存在的光污染有什么关联？",
+      "阅读完成后你有什么问题？你认为作者在哪些方面的结论客观证据坚实？在哪些方面没讲清楚？"
+    ];
+
+    const literatureData = [
+      {id:"ALAN-LIT-001",tier:"A1",priority:"必读",title:"Impacts of artificial light at night in marine ecosystems - A review",year:2022,doi:"10.1111/gcb.16264",pmid:"35583661",pmcid:"PMC9540822",readingTask:"提取 ALAN 影响的物种、栖息地、光源类型、管理缺口。",supportClaim:"Marine ALAN 已形成跨生态系统的生态压力源证据底座。",forbiddenClaim:"不能证明 ALAN 已普遍改变海洋微污染物光化学。"},
+      {id:"ALAN-LIT-002",tier:"A1",priority:"必读",title:"The impacts of artificial light at night on the ecology of temperate and tropical reefs",year:2023,doi:"10.1098/rstb.2022.0362",pmid:"37899007",pmcid:"PMC10613546",readingTask:"记录 reef 场景中的鱼类、无脊椎动物、珊瑚终点。",supportClaim:"ALAN 可作为 reef ecology 场景中的生态压力源。",forbiddenClaim:"不能替代污染物毒理或光化学证据。"},
+      {id:"ALAN-LIT-003",tier:"A1",priority:"必读",title:"Global disruption of coral broadcast spawning associated with artificial light at night",year:2023,doi:"10.1038/s41467-023-38070-y",pmid:"37188683",pmcid:"PMC10185496",readingTask:"解释月相/自然光信号被遮蔽的机制。",supportClaim:"ALAN 与珊瑚繁殖节律干扰相关。",forbiddenClaim:"不能说明污染物转化产物或毒性变化。"},
+      {id:"ALAN-LIT-004",tier:"A1",priority:"有则更好",title:"Artificial light at night alters trophic interactions of intertidal invertebrates",year:2017,doi:"10.1111/1365-2656.12670",pmid:"28452048",readingTask:"总结 ALAN 如何改变捕食、觅食、避难行为。",supportClaim:"ALAN 可改变潮间带无脊椎动物营养相互作用。",forbiddenClaim:"不能证明 ALAN 与每类污染物存在协同增毒。"},
+      {id:"ALAN-LIT-005",tier:"A1",priority:"有则更好",title:"Disruption of marine habitats by artificial light at night from global coastal megacities",year:2022,doi:"10.1525/elementa.2022.00042",readingTask:"提取水下光场、月光比较、透明度、潮汐相关信息。",supportClaim:"全球沿海大城市 ALAN 可改变海洋栖息地夜间光场。",forbiddenClaim:"不能证明特定污染物发生转化。"},
+      {id:"ALAN-LIT-006",tier:"A1",priority:"有则更好",title:"Urban shading and artificial light at night alter natural light regimes and affect marine intertidal assemblages",year:2023,doi:"10.1016/j.marpolbul.2023.115203",readingTask:"查全文确认 assemblage 终点和方法设计。",supportClaim:"人工遮阴和夜间照明共同改变潮间带自然光环境。",forbiddenClaim:"不能证明污染物风险上升。"},
+      {id:"ALAN-LIT-007",tier:"A1",priority:"缺口指示",title:"Ecological consequences of artificial light at night on coastal species in natural and artificial habitats: a review",year:2025,doi:"10.1007/s00227-024-04568-2",readingTask:"获取全文后补录物种组、栖息地类型和证据缺口。",supportClaim:"近岸物种 ALAN 生态证据正在形成更新综述。",forbiddenClaim:"不能作为已完成化学实验依据。"},
+      {id:"ALAN-LIT-008",tier:"B",priority:"必读",title:"Dissolved Organic Matter Singlet Oxygen Quantum Yields",year:2020,doi:"10.1021/acs.est.9b07246",readingTask:"提取 DOM 来源、光源条件、¹O₂ 量子产率、方法边界。",supportClaim:"DOM 可产生或调节单线态氧等光化学活性中间体。",forbiddenClaim:"不能证明真实 ALAN 低照度下必然触发同等反应。"},
+      {id:"ALAN-LIT-009",tier:"B",priority:"必读",title:"Indirect photodegradation of sulfadiazine in the presence of DOM",year:2021,doi:"10.1016/j.envpol.2020.115689",pmid:"33069046",readingTask:"记录 DOM 组分、盐度、碳酸盐、pH、硝酸盐对速率方向的影响。",supportClaim:"DOM 组分和海水主要成分会影响抗生素间接光降解。",forbiddenClaim:"不能直接证明 coastal ALAN 具有足够光强。"},
+      {id:"ALAN-LIT-010",tier:"B",priority:"必读",title:"Direct and indirect photolysis of triclocarban in the presence of dissolved organic matter",year:2015,doi:"10.12952/journal.elementa.000050",readingTask:"比较不同 DOM 来源对 triclocarban 光解的影响。",supportClaim:"DOM 可同时影响直接/间接光解路径。",forbiddenClaim:"不能说明所有 PPCPs 在海水中有相同路径。"},
+      {id:"ALAN-LIT-011",tier:"B",priority:"有则更好",title:"Chromophoric dissolved organic matter (CDOM) in the Equatorial Atlantic Ocean",year:2013,doi:"10.1016/j.marchem.2012.11.001",readingTask:"提取 CDOM 吸收、荧光、来源和空间差异。",supportClaim:"海洋 CDOM 具有可测光学性质和来源差异。",forbiddenClaim:"不能支持污染物降解或毒性变化结论。"},
+      {id:"ALAN-LIT-012",tier:"B",priority:"有则更好",title:"Photolytic transformation of trace organic compounds",year:2025,doi:"10.1016/j.watres.2025.123799",readingTask:"整理化合物列表、贡献拆分方法和适用边界。",supportClaim:"痕量有机物转化可分解为直接光解与 ¹O₂ 间接光解贡献。",forbiddenClaim:"不能等同于海岸 ALAN 实证研究。"},
+      {id:"ALAN-LIT-013",tier:"C/D",priority:"必读",title:"UV filters from untreated wastewater in sediment from eastern Mediterranean river transition and coastal zones",year:2012,doi:"10.1016/j.marpolbul.2012.07.051",readingTask:"补录检出物、浓度、地点和水体/沉积物差异。",supportClaim:"UV filters 可进入河口与近岸沉积物环境。",forbiddenClaim:"不能证明 ALAN 改变 UV filters 命运。"},
+      {id:"ALAN-LIT-014",tier:"C/D",priority:"必读",title:"Acute toxicity of the UV filter oxybenzone to the coral Galaxea fascicularis",year:2021,doi:"10.1016/j.scitotenv.2021.148666",readingTask:"补录剂量、暴露时长、珊瑚终点和统计效应。",supportClaim:"Oxybenzone 对珊瑚具有毒理关注价值。",forbiddenClaim:"不能证明夜间人工光增强毒性。"},
+      {id:"ALAN-LIT-015",tier:"C/D",priority:"有则更好",title:"Ozonation of oxybenzone, octinoxate, and octocrylene UV-filters",year:2017,doi:"10.1016/j.jhazmat.2017.05.016",readingTask:"只作为转化产物关注背景，不能写成 ALAN 直接证据。",supportClaim:"UV filters 有可研究的转化动力学和产物问题。",forbiddenClaim:"不能作为海水 ALAN 直接证据。"},
+      {id:"ALAN-LIT-016",tier:"C/D",priority:"必读",title:"Occurrence of PPCPs in effluent-dominated Saudi Arabian coastal waters of the Red Sea",year:2017,doi:"10.1016/j.chemosphere.2017.02.095",readingTask:"补录目标化合物、检出频率、站位和浓度范围。",supportClaim:"PPCPs 可在污水影响的红海近岸水体中检出。",forbiddenClaim:"不能证明这些 PPCPs 受 ALAN 转化。"},
+      {id:"ALAN-LIT-017",tier:"C/D",priority:"必读",title:"Degradation kinetics of PPCPs in surface waters: photolysis vs biodegradation",year:2017,doi:"10.1016/j.scitotenv.2017.03.015",readingTask:"补录目标化合物、速率常数和排序逻辑。",supportClaim:"PPCPs 在表层水体中的光解与生物降解可比较。",forbiddenClaim:"不能直接外推到低照度夜间海岸。"},
+      {id:"ALAN-LIT-018",tier:"C/D",priority:"有则更好",title:"Wastewater contribution to PPCPs in Antarctic coastal waters",year:2022,doi:"10.1016/j.scitotenv.2022.158116",readingTask:"补录污水贡献估计、站位和浓度分布。",supportClaim:"本地污水可贡献极地近岸 PPCPs 暴露。",forbiddenClaim:"不能证明光污染影响污染物归趋。"},
+      {id:"ALAN-LIT-019",tier:"C/D",priority:"必读",title:"Ecotoxicological effects of combined UVB and organic contaminants in coastal waters",year:2006,doi:"10.1562/2005-09-18-ra-688.1",pmid:"16602830",readingTask:"区分 UVB 证据与 ALAN 低照度证据。",supportClaim:"UVB 与有机污染物共暴露可产生沿海生态毒理关注。",forbiddenClaim:"不能证明可见光或 ALAN 具有同等效应。"},
+      {id:"ALAN-LIT-020",tier:"B/C",priority:"必读",title:"Photo-enhanced toxicity of fluoranthene to Gulf of Mexico marine organisms",year:2016,doi:"10.1002/etc.3250",pmid:"26590351",readingTask:"提取 UV 强度、幼虫龄期、效应浓度、剂量响应。",supportClaim:"UV 共暴露可增强 PAH 对海洋生物幼虫的毒性。",forbiddenClaim:"不能证明 coastal ALAN 低照度触发同等光毒性增强。"},
+      {id:"ALAN-LIT-021",tier:"B/C",priority:"必读",title:"Potent phototoxicity of marine bunker oil to translucent herring embryos",year:2012,doi:"10.1371/journal.pone.0030116",pmid:"22312421",pmcid:"PMC3270018",readingTask:"记录风化条件、UV 剂量、胚胎发育终点。",supportClaim:"风化原油组分在 UV 照射下仍可对鱼类胚胎产生光毒性。",forbiddenClaim:"不能直接证明 coastal ALAN 光源有同等效应。"},
+      {id:"ALAN-LIT-022",tier:"B/C",priority:"有则更好",title:"Phototoxic potential of Macondo crude oils to Gulf of Mexico Marine Organisms",year:2017,doi:"10.1002/etc.3808",pmid:"28418080",readingTask:"比较分散/未分散、新鲜/风化油态差异。",supportClaim:"原油 PAHs 光毒性因油态而异。",forbiddenClaim:"不能证明 coastal ALAN 低照度会产生相同光毒性效应。"},
+      {id:"ALAN-LIT-023",tier:"B/C",priority:"有则更好",title:"Co-exposure to UV radiation and crude oil increases toxicity in Atlantic haddock",year:2023,doi:"10.1016/j.scitotenv.2022.160080",pmid:"36375555",readingTask:"提取 UV 剂量、原油浓度、畸形类型和交互效应。",supportClaim:"UV-原油共暴露可增强鱼类早期生命阶段毒性和畸形。",forbiddenClaim:"不能证明 coastal ALAN 低照度触发同等共暴露效应。"},
+      {id:"ALAN-LIT-024",tier:"D",priority:"必读",title:"CMS International Light Pollution Guidelines for Migratory Species",year:2026,url:"https://www.cms.int/sites/default/files/document/2026-05/cms_cop15_res.13.5_rev.cop15_cms-international-light-pollution-guidelines_e_0.pdf",readingTask:"提取 right light, right place, right time 和适用物种。",supportClaim:"CMS 将 light pollution 作为迁徙物种管理问题。",forbiddenClaim:"不能证明本项目已被政策采纳。"},
+      {id:"ALAN-LIT-025",tier:"D",priority:"必读",title:"CMS International Light Pollution Guidelines for Migratory Species annex",year:2026,url:"https://www.cms.int/sites/default/files/document/2026-05/cms_cop15_res.13.5_rev.cop15_annex_cms-international-light-pollution-guidelines_e_0.pdf",readingTask:"提取 marine turtles、seabirds、shorebirds 管理建议。",supportClaim:"CMS 光污染指南附录提供物种级减缓建议。",forbiddenClaim:"不能作为污染物光化学证据。"},
+      {id:"ALAN-LIT-026",tier:"D",priority:"必读",title:"National Light Pollution Guidelines for Wildlife, Australia, Version 2.0",year:2023,url:"https://www.dcceew.gov.au/sites/default/files/documents/national-light-pollution-guidelines-wildlife.pdf",readingTask:"提取低强度、限时、限域、过滤短波光原则。",supportClaim:"澳大利亚已将光污染纳入国家野生动物保护指南。",forbiddenClaim:"不能说明暗夜保护能降解污染物。"},
+      {id:"ALAN-LIT-027",tier:"D",priority:"有则更好",title:"National Light Pollution Guidelines for Wildlife including Marine Turtles, Seabirds and Migratory Shorebirds",year:2020,url:"https://www.agriculture.gov.au/sites/default/files/documents/national-light-pollution-guidelines-wildlife.pdf",readingTask:"比较 2020 与 2023 版本的管理重点。",supportClaim:"澳大利亚已针对海龟、海鸟和迁徙滨鸟发布光污染保护指南。",forbiddenClaim:"不能替代最新版本或证明项目政策效果。"}
+    ];
+
+    const memoryStore = {};
+    function safeGet(key) { try { return localStorage.getItem(key); } catch (error) { return memoryStore[key] || null; } }
+    function safeSet(key, value) { memoryStore[key] = value; try { localStorage.setItem(key, value); } catch (error) { console.warn("localStorage 写入失败，使用临时内存。", error); } }
+    function safeRemove(key) { delete memoryStore[key]; try { localStorage.removeItem(key); } catch (error) { console.warn("localStorage 删除失败。", error); } }
+    function blankStatus() { return Object.fromEntries(literatureData.map(item => [item.id, "unread"])); }
+    function loadState() {
+      try {
+        const saved = JSON.parse(safeGet(STORAGE_KEY) || "{}");
+        return {
+          activeTab: saved.activeTab || "overview",
+          tierFilter: saved.tierFilter || "all",
+          studentCode: saved.studentCode || "",
+          selectedLiteratureId: saved.selectedLiteratureId || literatureData[0].id,
+          literatureStatus: {...blankStatus(), ...(saved.literatureStatus || {})},
+          feedback: Array.isArray(saved.feedback) ? saved.feedback : [],
+          questions: Array.isArray(saved.questions) ? saved.questions : []
+        };
+      } catch (error) {
+        console.warn("草稿读取失败，已载入空白状态。", error);
+        return { activeTab: "overview", tierFilter: "all", studentCode: "", selectedLiteratureId: literatureData[0].id, literatureStatus: blankStatus(), feedback: [], questions: [] };
+      }
+    }
+
+    const state = loadState();
+
+    function saveState(message) { safeSet(STORAGE_KEY, JSON.stringify(state)); if (message) showToast(message); }
+    function showToast(message) { const toast = document.getElementById("toast"); toast.textContent = message; toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800); }
+    function escapeHtml(value) { return String(value || "").replace(/[&<>"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"})[char]); }
+    function tierClass(tier) { return tier.toLowerCase().replace("/", ""); }
+    function sourceLink(item) { return item.doi ? `https://doi.org/${item.doi}` : item.url || ""; }
+    function statusText(status) { return status === "feedback_done" ? "已反馈" : status === "reading" ? "阅读中" : "未开始"; }
+
+    function renderTabs() {
+      document.getElementById("tabbar").innerHTML = tabs.map(([key, label]) => `<button class="tab-button ${state.activeTab === key ? "active" : ""}" type="button" data-action="tab" data-tab="${key}">${label}</button>`).join("");
+      document.querySelectorAll(".section").forEach(section => {
+        section.classList.toggle("active", section.dataset.section === state.activeTab);
+      });
+    }
+
+    function renderMetrics() {
+      const done = Object.values(state.literatureStatus).filter(value => value === "feedback_done").length;
+      document.getElementById("hero-metrics").innerHTML = `<div class="metric"><b>27</b><span>必读与补强文献/资料</span></div><div class="metric"><b>${done}</b><span>已保存阅读反馈</span></div><div class="metric"><b>A2=0</b><span>化学直接证据缺口</span></div>`;
+      document.getElementById("summary-display").value = `${done}/27 篇已反馈，${state.questions.length} 个项目问题`;
+    }
+
+    function renderFilters() {
+      const tiers = ["all", "A1", "B", "C/D", "B/C", "D"];
+      document.getElementById("tier-filters").innerHTML = tiers.map(tier => {
+        const count = tier === "all" ? literatureData.length : literatureData.filter(item => item.tier === tier).length;
+        const label = tier === "all" ? "全部" : tier;
+        return `<button class="filter-button ${state.tierFilter === tier ? "active" : ""}" type="button" data-action="filter-tier" data-tier="${tier}">${label} · ${count}</button>`;
+      }).join("");
+    }
+
+    function renderLiteratureList() {
+      const list = document.getElementById("literature-list");
+      const items = state.tierFilter === "all" ? literatureData : literatureData.filter(item => item.tier === state.tierFilter);
+      list.innerHTML = items.map(item => {
+        const status = state.literatureStatus[item.id] || "unread";
+        const link = sourceLink(item);
+        return `<article class="literature-card ${status === "feedback_done" ? "done" : status}">
+          <div class="meta"><span class="tier ${tierClass(item.tier)}">${item.tier}</span><span class="tag">${item.priority}</span><span>${item.id}</span><span>${item.year}</span><span class="status-pill ${status === "feedback_done" ? "done" : status}">${statusText(status)}</span></div>
+          <div class="card-title">${escapeHtml(item.title)}</div>
+          <p class="compact"><b>阅读任务：</b>${escapeHtml(item.readingTask)}</p>
+          <div class="claim-box"><b>能支持：</b>${escapeHtml(item.supportClaim)}<br><b>不能支持：</b>${escapeHtml(item.forbiddenClaim)}</div>
+          <div class="button-row">
+            ${link ? `<a class="btn secondary" href="${escapeHtml(link)}" target="_blank" rel="noopener">打开来源</a>` : ""}
+            <button class="btn secondary" type="button" data-action="mark-reading" data-id="${item.id}">标记阅读中</button>
+            <button class="btn" type="button" data-action="select-literature" data-id="${item.id}">填写反馈</button>
+          </div>
+        </article>`;
+      }).join("");
+    }
+
+    function renderFeedbackForm() {
+      const select = document.getElementById("feedback-literature");
+      select.innerHTML = literatureData.map(item => `<option value="${item.id}" ${state.selectedLiteratureId === item.id ? "selected" : ""}>${item.id} · ${item.tier} · ${escapeHtml(item.title)}</option>`).join("");
+      document.getElementById("feedback-questions").innerHTML = questionPrompts.map((prompt, index) => `<label class="question-label">Q${index + 1}<span>${prompt}${index < 6 ? "（必填）" : ""}</span><textarea id="q${index + 1}" placeholder="请用自己的话回答，不要复制摘要。"></textarea></label>`).join("");
+    }
+
+    function renderFeedbackList() {
+      const list = document.getElementById("feedback-list");
+      if (!state.feedback.length) { list.innerHTML = `<article class="panel"><p>还没有保存阅读反馈。</p></article>`; return; }
+      list.innerHTML = state.feedback.map(entry => {
+        const item = literatureData.find(record => record.id === entry.literatureId) || {};
+        return `<article class="feedback-card">
+          <div class="meta"><span class="tier ${tierClass(item.tier || "")}">${escapeHtml(item.tier || "未分类")}</span><span>${escapeHtml(entry.date)}</span><span>${escapeHtml(entry.literatureId)}</span></div>
+          <h3>${escapeHtml(item.title || entry.literatureId)}</h3>
+          <div class="record-body"><b>文献类型：</b>${escapeHtml(entry.answers.q1)}\n<b>研究故事：</b>${escapeHtml(entry.answers.q2)}\n<b>暗夜保护关联：</b>${escapeHtml(entry.answers.q6)}\n<b>ALAN 与光污染关联：</b>${escapeHtml(entry.answers.q7 || "未填写")}\n<b>追问与证据评价：</b>${escapeHtml(entry.answers.q8 || "未填写")}</div>
+          <div class="button-row"><button class="btn secondary" type="button" data-action="delete-feedback" data-id="${entry.id}">删除反馈</button></div>
+        </article>`;
+      }).join("");
+    }
+
+    function renderQuestions() {
+      const list = document.getElementById("question-list");
+      if (!state.questions.length) { list.innerHTML = `<article class="panel"><p>还没有提交项目问题。</p></article>`; return; }
+      list.innerHTML = state.questions.map(item => `<article class="feedback-card"><div class="meta"><span>${escapeHtml(item.date)}</span><span class="tag">${escapeHtml(item.category)}</span></div><div class="record-body">${escapeHtml(item.text)}</div><div class="button-row"><button class="btn secondary" type="button" data-action="delete-question" data-id="${item.id}">删除问题</button></div></article>`).join("");
+    }
+
+    function render() {
+      renderTabs(); renderMetrics(); renderFilters(); renderLiteratureList(); renderFeedbackForm(); renderFeedbackList(); renderQuestions();
+      document.getElementById("student-code").value = state.studentCode;
+      document.getElementById("feedback-date").value ||= new Date().toISOString().slice(0, 10);
+    }
+
+    function saveFeedback() {
+      const literatureId = document.getElementById("feedback-literature").value;
+      if (!literatureId) return showToast("请先选择文献。");
+      const answers = {};
+      for (let index = 1; index <= 8; index += 1) answers[`q${index}`] = document.getElementById(`q${index}`).value.trim();
+      for (let index = 1; index <= 6; index += 1) if (!answers[`q${index}`]) return showToast(`请先填写 Q${index}。`);
+      state.feedback.unshift({ id: String(Date.now()), literatureId, date: document.getElementById("feedback-date").value || new Date().toISOString().slice(0, 10), answers });
+      state.literatureStatus[literatureId] = "feedback_done";
+      questionPrompts.forEach((_, index) => { document.getElementById(`q${index + 1}`).value = ""; });
+      saveState("阅读反馈已保存。");
+      render();
+    }
+
+    function addQuestion() {
+      const text = document.getElementById("question-text").value.trim();
+      if (!text) return showToast("请先填写项目问题。");
+      state.questions.unshift({ id: String(Date.now()), date: new Date().toLocaleString("zh-CN"), category: document.getElementById("question-category").value, text });
+      document.getElementById("question-text").value = "";
+      saveState("项目问题已保存。");
+      render();
+    }
+
+    function buildExportPayload() {
+      return { version: "alan_feedback_portal_v1", exportDate: new Date().toISOString(), studentCode: state.studentCode || "", literatureStatus: state.literatureStatus, literatureFeedback: state.feedback, projectQuestions: state.questions };
+    }
+
+    function buildTextExport() {
+      const lines = [`# ${state.studentCode || "未填写识别码"} · ALAN 文献阅读反馈`, `导出时间：${new Date().toLocaleString("zh-CN")}`, "", "## 文献阅读反馈"];
+      if (!state.feedback.length) lines.push("暂无");
+      state.feedback.forEach(entry => {
+        const item = literatureData.find(record => record.id === entry.literatureId) || {};
+        lines.push(`### ${entry.date} · ${entry.literatureId} · ${item.title || ""}`);
+        questionPrompts.forEach((prompt, index) => {
+          lines.push(`Q${index + 1} ${prompt}\n${entry.answers[`q${index + 1}`] || "未填写"}`);
+        });
+        lines.push("");
+      });
+      lines.push("## 项目问题");
+      if (!state.questions.length) lines.push("暂无");
+      state.questions.forEach(item => {
+        lines.push(`- [${item.category}] ${item.date}：${item.text}`);
+      });
+      lines.push("", "## 边界提醒", "- 不声称已完成实验、论文发表、获奖、政策采纳或导师背书。", "- A2=0 表示 ALAN 条件下化学直接证据缺口。", "- A1/B/C/D 证据不能替代 A2 化学直接证据。");
+      return lines.join("\n");
+    }
+
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.href = url; link.download = filename; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    }
+
+    function exportText() { state.studentCode = document.getElementById("student-code").value.trim(); saveState(); const code = (state.studentCode || "student").replace(/[\\/:*?"<>|\s]+/g, "-"); downloadFile(buildTextExport(), `${code}-ALAN文献阅读反馈.txt`, "text/plain;charset=utf-8"); showToast("TXT 已导出，请人工发送。"); }
+    function exportJson() { state.studentCode = document.getElementById("student-code").value.trim(); saveState(); const code = (state.studentCode || "student").replace(/[\\/:*?"<>|\s]+/g, "-"); downloadFile(JSON.stringify(buildExportPayload(), null, 2), `${code}-ALAN文献阅读反馈.json`, "application/json;charset=utf-8"); showToast("JSON 已导出，请人工发送。"); }
+
+    function runAction(button) {
+      const action = button.dataset.action;
+      if (action === "tab") state.activeTab = button.dataset.tab;
+      if (action === "filter-tier") state.tierFilter = button.dataset.tier;
+      if (action === "select-literature") { state.selectedLiteratureId = button.dataset.id; state.activeTab = "feedback"; state.literatureStatus[button.dataset.id] = state.literatureStatus[button.dataset.id] === "feedback_done" ? "feedback_done" : "reading"; }
+      if (action === "mark-reading") state.literatureStatus[button.dataset.id] = "reading";
+      if (action === "save-feedback") return saveFeedback();
+      if (action === "delete-feedback") { state.feedback = state.feedback.filter(entry => entry.id !== button.dataset.id); state.literatureStatus = blankStatus(); state.feedback.forEach(entry => { state.literatureStatus[entry.literatureId] = "feedback_done"; }); }
+      if (action === "add-question") return addQuestion();
+      if (action === "delete-question") state.questions = state.questions.filter(item => item.id !== button.dataset.id);
+      if (action === "save-all") state.studentCode = document.getElementById("student-code").value.trim();
+      if (action === "export-text") return exportText();
+      if (action === "export-json") return exportJson();
+      if (action === "clear-all") { if (!confirm("确认清空本机草稿？此操作不会删除已下载的文件。")) return; safeRemove(STORAGE_KEY); Object.assign(state, loadState()); showToast("本机数据已清空。"); }
+      saveState(action === "save-all" ? "草稿已保存。" : "已更新。");
+      render();
+    }
+
+    document.addEventListener("click", event => { const button = event.target.closest("button[data-action]"); if (button) runAction(button); });
+    document.getElementById("feedback-literature").addEventListener("change", event => { state.selectedLiteratureId = event.target.value; saveState(); });
+    document.getElementById("student-code").addEventListener("input", event => { state.studentCode = event.target.value.trim(); saveState(); renderMetrics(); });
+    render();
+  </script>
+</body>
+</html>
